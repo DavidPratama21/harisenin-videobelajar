@@ -1,6 +1,10 @@
+import { useNavigate } from "react-router";
 import { create } from "zustand";
 import { toast } from "react-toastify";
-import { Users } from "../data/Users";
+import axios from "axios";
+
+const api_url = import.meta.env.VITE_API_URL;
+// const navigate = useNavigate();
 
 export const useStore = create((set, get) => ({
     // Form states
@@ -11,27 +15,12 @@ export const useStore = create((set, get) => ({
     gender: "male",
     confirmPassword: "",
 
-    // Data
-    users: [],
-
-    // Setters
     setField: (field, value) =>
         set((state) => ({
             ...state,
             [field]: value,
         })),
 
-    // Ambil data dari LS
-    initializeUsers: () => {
-        const cek_users_LS = localStorage.getItem("users");
-        if (!cek_users_LS) {
-            localStorage.setItem("users", JSON.stringify(Users));
-        }
-        const usersParse = JSON.parse(localStorage.getItem("users") || "[]");
-        set({ users: usersParse });
-    },
-
-    // Reset Form
     resetForm: () =>
         set({
             email: "",
@@ -42,45 +31,113 @@ export const useStore = create((set, get) => ({
             confirmPassword: "",
         }),
 
-    // Handle Login
-    login: (navigate) => {
-        const { users, email, password } = get();
-        const resetForm = get().resetForm
-        const user = users.find(
-            (u) => u.email === email && u.password === password
-        );
+    login: async (navigate) => {
+        const { email, password, resetForm } = get();
 
-        if (user) {
+        try {
+            const res = await axios.post(`${api_url}/login`, {
+                email,
+                password,
+            });
+            console.log(res);
+            if (!res.data.user) {
+                toast.error(
+                    res.data.message
+                        ? `Login gagal: ${res.data.message}`
+                        : "Login gagal"
+                );
+
+                return;
+            }
+            const user = res.data.user;
             localStorage.setItem("Login", true);
-            localStorage.setItem("Lagi Login", JSON.stringify(user));
+            localStorage.setItem("user", JSON.stringify(user));
+
             toast.success("Login Success");
             resetForm();
             navigate("/");
-        } else {
-            toast.error("Login Gagal");
+        } catch (e) {
+            toast.error(e.response?.data?.message || "Login gagal");
         }
     },
 
-    register: (navigate) => {
-        const { name, email, gender, phone, password, confirmPassword } = get();
-        const resetForm = get().resetForm
-        const role = "user";
+    register: async (navigate) => {
+        const {
+            name,
+            email,
+            gender,
+            phone,
+            password,
+            confirmPassword,
+            resetForm,
+        } = get();
 
-        const users = JSON.parse(localStorage.getItem("users") || "[]");
-
-        if (users.find((user) => user.email === email)) {
-            toast.warning("Email uda terdaftar");
-            return;
-        }
         if (password !== confirmPassword) {
             toast.warning("Password & Konfirm Password mesti sama");
             return;
         }
 
-        const new_user = { name, email, gender, phone, password, role };
-        users.push(new_user);
-        localStorage.setItem("users", JSON.stringify(users));
-        resetForm();
-        navigate("/login");
+        try {
+            if (
+                !name ||
+                !email ||
+                !phone ||
+                !gender ||
+                !password ||
+                !confirmPassword
+            ) {
+                toast.warning("Semua field wajib diisi!");
+                return;
+            }
+            await axios.post(`${api_url}/register`, {
+                name,
+                email,
+                gender,
+                phone,
+                password,
+            });
+            toast.success("Register Success");
+            resetForm();
+            navigate("/login");
+        } catch (e) {
+            toast.error(e.response?.data?.message || "Gagal Regis");
+        }
+    },
+
+    logout: (navigate) => {
+        localStorage.removeItem("Login");
+        localStorage.removeItem("user");
+        toast.info("Anda telah Log Out");
+        if (navigate) navigate("/login");
+    },
+
+    updateProfile: async (id, onSuccess) => {
+        const { name, email, phone, password, confirmPassword } = get();
+        if (password && password !== confirmPassword) {
+            toast.error("Password & Konfirmasi Password harus sama");
+            return;
+        }
+        try {
+            const { data } = await axios.put(`${api_url}/users/${id}`, {
+                name,
+                email,
+                phone,
+                password,
+            });
+            const userLs = JSON.parse(localStorage.getItem("user"));
+            const updatedUser = { ...userLs, name, email };
+            localStorage.setItem("user", JSON.stringify(updatedUser));
+            toast.success("Update Profile Success", { autoClose: 2500 });
+
+            setTimeout(() => {
+                if (onSuccess) onSuccess(name, email);
+            }, 3000);
+        } catch (e) {
+            if (e.response?.data?.message?.includes("email")) {
+                toast.error("Email sudah terdaftar!");
+            } else {
+                toast.error("Gagal mengupdate profil.");
+            }
+        }
     },
 }));

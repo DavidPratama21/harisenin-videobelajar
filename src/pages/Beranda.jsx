@@ -20,8 +20,8 @@ import Beranda_layout from "../layouts/Beranda_layout";
 import Tabs from "../components/molecules/Tabs";
 import Hero from "../components/molecules/Hero";
 import Title_desc from "../components/molecules/Title_desc";
-import { Videos } from "../data/Videos";
-import { Tutors } from "../data/Tutors";
+// import { Videos } from "../data/Videos";
+// import { Tutors } from "../data/Tutors";
 
 const TabsList = [
     "Semua Kelas",

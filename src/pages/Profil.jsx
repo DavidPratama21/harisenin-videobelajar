@@ -7,72 +7,50 @@ import Button from "../components/atoms/Button";
 import Divider from "../components/atoms/Divider";
 import Input from "../components/atoms/Input";
 import Avatar from "../assets/Avatar_tutor/2.png";
-import { Users } from "../data/Users";
+import { useStore } from "../store/UserStore";
 
 const Profil = () => {
-    const [nameDisplay, setNameDisplay] = useState("");
-    const [emailDisplay, setEmailDisplay] = useState("");
+    const [displayName, setDisplayName] = useState("");
+    const [displayEmail, setDisplayEmail] = useState("");
+    const {
+        name,
+        email,
+        phone,
+        gender,
+        password,
+        confirmPassword,
+        setField,
+        updateProfile,
+    } = useStore();
 
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
-    const [phone, setPhone] = useState("");
-    // const [avatar, setAvatar] = useState("");
-    const [gender, setGender] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-
-    // Ambil data dari local storage dari "Lagi Login"
     useEffect(() => {
-        const dataUser = localStorage.getItem("Lagi Login");
-        if (dataUser) {
-            const parsed = JSON.parse(dataUser);
-            setNameDisplay(parsed.name);
-            setEmailDisplay(parsed.email);
-            // Di Form
-            setName(parsed.name);
-            setEmail(parsed.email);
-            setPhone(parsed.phone);
-            setGender(parsed.gender);
-            setPassword(parsed.password);
-        }
-    }, []);
+        const userLogin = JSON.parse(localStorage.getItem("user"));
+        if (!userLogin?.id) return;
 
-    // Ambil semua data dari users LS
-    const users = JSON.parse(localStorage.getItem("users")) || [];
+        const fetchUser = async () => {
+            try {
+                const res = await fetch(
+                    `${import.meta.env.VITE_API_URL}/users/${userLogin.id}`
+                );
+                const response = await res.json();
+                const user = response.data;
+                setField("name", user.name);
+                setField("email", user.email);
+                setField("phone", user.phone);
+                setField("gender", user.gender);
+                setField("password", "");
+                setField("confirmPassword", "");
+            } catch (err) {
+                toast.error("Gagal mengambil data user");
+            }
+        };
+        setDisplayName(user.name);
+        setDisplayEmail(user.email);
 
-    // Ini data user yg lagi login
-    const user = JSON.parse(localStorage.getItem("Lagi Login"));
+        fetchUser();
+    }, [setField]);
 
-    // Buang data user dari users
-    const users_tanpa_user = users.filter((u) => u.email !== user.email);
-
-    const handleUpdate = (e) => {
-        e.preventDefault();
-
-        // Cek konfirm PW
-        if (password !== confirmPassword) {
-            toast.error("Password & Konfirm Password mesti sama");
-            return;
-        }
-
-        // Simpan data user
-        const data_dari_form = { name, email, phone, gender, password };
-        localStorage.setItem("Lagi Login", JSON.stringify(data_dari_form));
-
-        // masukin ke users lagi
-        users_tanpa_user.push(data_dari_form);
-
-        // update users di LS
-        localStorage.setItem("users", JSON.stringify(users_tanpa_user));
-
-        // Notif Sukses
-        toast.success("Data Berhasil Diupdate");
-
-        // Refresh Update Data
-        setTimeout(() => {
-            window.location.reload();
-        }, 3000);
-    };
+    const user = JSON.parse(localStorage.getItem("user"));
 
     return (
         <Profil_layout>
@@ -104,10 +82,10 @@ const Profil = () => {
                         />
                         <div className="grid sm:gap-2">
                             <p className="font-semibold leading-[120%] text-dark-primary sm:text-xl">
-                                {nameDisplay}
+                                {displayName}
                             </p>
                             <p className="leading-[140%] tracking-[0.2px] text-dark-primary sm:text-lg">
-                                {emailDisplay}
+                                {displayEmail}
                             </p>
                             <button className="font-bold leading-[140%] tracking-[0.2px] text-tertiary w-fit">
                                 Ganti Foto Profil
@@ -117,13 +95,27 @@ const Profil = () => {
                     {/* Divider */}
                     <Divider />
                     {/* 4420 Biography Box */}
-                    <form onSubmit={handleUpdate} className="grid gap-6">
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            updateProfile(
+                                user.id,
+                                (updatedName, updatedEmail) => {
+                                    setDisplayName(updatedName);
+                                    setDisplayEmail(updatedEmail);
+                                }
+                            );
+                        }}
+                        className="grid gap-6"
+                    >
                         {/* Form Bio */}
                         <div className="grid gap-4 sm:flex">
                             {/* 4429 Name & Email */}
                             <div className="grid gap-4 sm:flex">
                                 <Input
-                                    onChange={(e) => setName(e.target.value)}
+                                    onChange={(e) =>
+                                        setField("name", e.target.value)
+                                    }
                                     type={"text"}
                                     value={name}
                                     id={`name`}
@@ -131,7 +123,9 @@ const Profil = () => {
                                     Nama Lengkap
                                 </Input>
                                 <Input
-                                    onChange={(e) => setEmail(e.target.value)}
+                                    onChange={(e) =>
+                                        setField("email", e.target.value)
+                                    }
                                     type={"email"}
                                     value={email}
                                     id={`email`}
@@ -145,10 +139,7 @@ const Profil = () => {
                                 <div className="relative sm:hidden">
                                     <select
                                         value={gender}
-                                        onChange={(e) =>
-                                            setGender(e.target.value)
-                                        }
-                                        id=""
+                                        disabled
                                         className="peer h-[49px] border border-gray-300 rounded-[10px] px-3 focus:outline-none focus:border-primary w-full"
                                     >
                                         <option value="male">Male</option>
@@ -176,7 +167,7 @@ const Profil = () => {
                                         id="Phone"
                                         value={phone}
                                         onChange={(e) =>
-                                            setPhone(e.target.value)
+                                            setField("phone", e.target.value)
                                         }
                                     >
                                         No. Hp
@@ -188,7 +179,7 @@ const Profil = () => {
                                 <Input
                                     id="PW"
                                     onChange={(e) =>
-                                        setPassword(e.target.value)
+                                        setField("password", e.target.value)
                                     }
                                     type={"password"}
                                     value={password}
@@ -198,7 +189,10 @@ const Profil = () => {
                                 <Input
                                     id="PWConfirm"
                                     onChange={(e) =>
-                                        setConfirmPassword(e.target.value)
+                                        setField(
+                                            "confirmPassword",
+                                            e.target.value
+                                        )
                                     }
                                     type={"password"}
                                 >

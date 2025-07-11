@@ -5,7 +5,6 @@ import PhoneInput from "react-phone-input-2";
 import Register_layout from "../../layouts/Register_layout";
 import Button from "../../components/atoms/Button";
 import GoogleLogo from "../../assets/Google_logo.svg";
-import { Users } from "../../data/Users";
 import { useStore } from "../../store/UserStore";
 
 const Register = () => {
@@ -21,14 +20,6 @@ const Register = () => {
         resetForm,
         register,
     } = useStore();
-
-    useEffect(() => {
-        const cek_users_LS = localStorage.getItem("users");
-        // kalo LS nya kosong, isiin dari DB ke LS
-        if (!cek_users_LS) {
-            localStorage.setItem("users", JSON.stringify(Users));
-        }
-    }, []);
 
     const handleRegis = (e) => {
         e.preventDefault();

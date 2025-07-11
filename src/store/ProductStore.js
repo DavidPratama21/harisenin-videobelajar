@@ -1,31 +1,40 @@
 import { create } from "zustand";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const api_url = import.meta.env.VITE_API_URL;
 
 export const useStore = create((set, get) => ({
     products: [],
     formData: {
-        title: "",
-        desc: "",
+        name: "",
+        description: "",
         price: "",
     },
     productEdit: null,
 
     fetchProducts: async () => {
-        const response = await axios.get(`${api_url}/Products`);
-        set({ products: response.data });
+        try {
+            const response = await axios.get(`${api_url}/Products`);
+            set({ products: response.data });
+        } catch (e) {
+            console.error("Error nya tu ini :", e.message);
+        }
     },
 
     handleAdd: async (e) => {
         e.preventDefault();
         const newProduct = get().formData;
-        const res = await axios.post(`${api_url}/Products`, newProduct);
-        // await get().fetchProduct();
-        set((state) => ({
-            products: [...state.products, res.data],
-            formData: { title: "", desc: "", price: "" },
-        }));
+        try {
+            const res = await axios.post(`${api_url}/products`, newProduct);
+            set((state) => ({
+                products: [...state.products, res.data.data],
+                formData: { name: "", description: "", price: "" },
+            }));
+            toast.success("Produk berhasil di tambahin")
+        } catch (e) {
+            console.error("Error nya tu ini :", e.message);
+        }
     },
 
     handleChange: (e) => {
@@ -41,8 +50,8 @@ export const useStore = create((set, get) => ({
         set({
             productEdit: product,
             formData: {
-                title: product.title,
-                desc: product.desc,
+                name: product.name,
+                description: product.description,
                 price: product.price,
             },
         });
@@ -53,14 +62,18 @@ export const useStore = create((set, get) => ({
         const { productEdit, formData, fetchProducts } = get();
         if (!productEdit) return;
 
-        try {
-            await axios.put(`${api_url}/Products/${productEdit.id}`, formData);
+        const { name, description, price } = formData;
+        if (!name || !description || !price) {
+            toast.warning("Semua field wajib diisi!");
+            return;
+        }
 
-            // update data lokal
-            await fetchProducts(); // atau update langsung di products
+        try {
+            await axios.put(`${api_url}/products/${productEdit.id}`, formData);
+            await fetchProducts();
             set({
                 productEdit: null,
-                formData: { title: "", desc: "", price: "" },
+                formData: { name: "", description: "", price: "" },
             });
             alert("Produk berhasil diperbarui!");
         } catch (err) {
@@ -80,14 +93,17 @@ export const useStore = create((set, get) => ({
     },
 
     handleDelete: async (id) => {
+        const confirmDelete = confirm("Yakin mau delete?");
+        if (!confirmDelete) return;
         try {
-            await axios.delete(`${api_url}/Products/${id}`);
+            await axios.delete(`${api_url}/products/${id}`);
             set((state) => ({
                 products: state.products.filter((p) => p.id !== id),
             }));
-            console.log("Sukses hapus produk");
+            toast.success("Sukses hapus produk");
         } catch (err) {
-            console.log("Gagal delete product:", err);
+            toast.error("Gagal delete product:");
+            console.error("Errornya karena :", e.message);
         }
     },
 }));

@@ -20,7 +20,7 @@ export default function Product_list() {
                                         {/* Name & Price */}
                                         <div className="grid">
                                             <h3 className="text-lg font-semibold">
-                                                {product.title}
+                                                {product.name}
                                             </h3>
                                             <span className="font-semibold text-primary">
                                                 ${product.price}
@@ -54,7 +54,7 @@ export default function Product_list() {
                                     </div>
                                     {/* Description */}
                                     <p className="text-dark-secondary">
-                                        {product.desc}
+                                        {product.description}
                                     </p>
                                     {/* COMING SOON */}
                                     {/* Tutor */}

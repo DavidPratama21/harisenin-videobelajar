@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useNavigate } from "react-router";
 // import { auth } from "../../services/firebase";
 // import { signInWithEmailAndPassword } from "firebase/auth";
@@ -10,17 +9,13 @@ import { useStore } from "../../store/UserStore";
 
 const Login = () => {
     const navigate = useNavigate();
-    const { email, password, setField, resetForm, initializeUsers, login } =
+    const { email, password, setField, resetForm, login } =
         useStore();
 
-    useEffect(() => {
-        initializeUsers();
-    }, []);
-
     // Proses Login dari Local
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
-        login(navigate);
+        await login(navigate);
     };
 
     return (

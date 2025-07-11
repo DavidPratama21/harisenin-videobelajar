@@ -11,45 +11,6 @@ const Create_product = () => {
         cancelEdit,
     } = useStore();
 
-    // const [formData, setFormData] = useState({
-    //     title: "",
-    //     price: "",
-    //     desc: "",
-    //     tutorName: "",
-    //     tutorRole: "",
-    //     tutorCompany: "",
-    // });
-
-    // useEffect(() => {
-    //     if (mauEdit) {
-    //         setFormData({
-    //             title: mauEdit.title,
-    //             price: mauEdit.price,
-    //             desc: mauEdit.desc,
-    //         });
-    //     } else {
-    //         // Untuk clear form kalo gajadi edit
-    //         setFormData({
-    //             title: "",
-    //             price: "",
-    //             desc: "",
-    //         });
-    //     }
-    // }, [mauEdit]);
-
-    // const handleChange = (e) => {
-    //     e.preventDefault();
-    //     const { name, value } = e.target;
-    //     setFormData({
-    //         ...formData,
-    //         [name]: value,
-    //     });
-    // };
-
-    // const handleSubmit = (e) => {
-    //     e.preventDefault();
-    // };
-
     return (
         <form
             onSubmit={productEdit ? handleUpdate : handleAdd}
@@ -63,9 +24,9 @@ const Create_product = () => {
                         Product Name
                     </label>
                     <input
-                        name="title"
+                        name="name"
                         type="text"
-                        value={formData.title}
+                        value={formData.name}
                         onChange={handleChange}
                         className="px-2 py-3 border border-gray-300 rounded-lg"
                         required
@@ -135,12 +96,12 @@ const Create_product = () => {
                 </div> */}
                 {/* Product Description */}
                 <div className="grid sm:col-span-2">
-                    <label htmlFor="desc" className="font-medium text-gray-500">
+                    <label htmlFor="description" className="font-medium text-gray-500">
                         Product Description
                     </label>
                     <textarea
-                        name="desc"
-                        value={formData.desc}
+                        name="description"
+                        value={formData.description}
                         onChange={handleChange}
                         className="px-2 py-3 border border-gray-300 rounded-lg"
                         required
