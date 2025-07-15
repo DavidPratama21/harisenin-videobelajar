@@ -39,13 +39,9 @@ export default function Product_list() {
                                             </button>
                                             {/* Remove */}
                                             <button
-                                                onClick={() => {
-                                                    if (confirm("Yakin?")) {
-                                                        handleDelete(
-                                                            product.id
-                                                        );
-                                                    }
-                                                }}
+                                                onClick={() =>
+                                                    handleDelete(product.id)
+                                                }
                                                 className="text-error-default"
                                             >
                                                 <TrashIcon size={20} />

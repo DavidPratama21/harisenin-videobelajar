@@ -13,7 +13,7 @@ import Kelas from "../pages/Kelas";
 import Profil from "../pages/Profil";
 import Video from "../pages/pembelajaran/Video";
 import ProtectedRoute from "./ProtectedRoute";
-import Admin from "../pages/Admin";
+import Admin from "../pages/admin/Admin";
 import PublicRoute from "./PublicRoute";
 import Aturan from "../pages/Aturan";
 import Quiz from "../pages/pembelajaran/Quiz";

@@ -1,8 +1,8 @@
 import { useEffect } from "react";
-import Admin_layout from "../layouts/Admin_layout";
-import Create_product from "../components/organisems/Create_product";
-import Product_list from "../components/organisems/Product_list";
-import { useStore } from "../store/ProductStore";
+import Admin_layout from "../../layouts/Admin_layout";
+import Create_product from "../../components/organisems/Create_product";
+import Product_list from "../../components/organisems/Product_list";
+import { useStore } from "../../store/ProductStore";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
