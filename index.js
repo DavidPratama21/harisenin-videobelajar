@@ -15,7 +15,7 @@ import {
     updateUser,
 } from "./src/configs/database.js";
 
-const JWT_SECRET = "rahasia";
+const JWT_SECRET = process.env.JWT_SECRET || "rahasia";
 const app = express();
 app.use(
     cors({
@@ -73,10 +73,11 @@ app.post("/login", async (req, res) => {
         return res.status(401).json({ message: "Invalid Password" });
     }
 
-    const token = jwt.sign({ id: user.user_id }, JWT_SECRET, {
+    const token = jwt.sign({ id: user.user_id, email: user.email }, JWT_SECRET, {
         expiresIn: "1h",
     });
-    res.send({
+    console.log(token)
+    res.json({
         message: "Login Success",
         token,
         user: {
@@ -89,15 +90,29 @@ app.post("/login", async (req, res) => {
 });
 
 const autheticateToken = (req, res, next) => {
-    const token = req.headers["authorization"]?.split("")[1];
-    if (!token) return res.sendStatus(401);
-
-    jwt.verify(token, JWT_SECRET, (err, user) => {
-        if (err) return res.sendStatus(403);
-        req.user = user;
-        next();
-    });
+    const token = req.headers["authorization"]?.split(" ")[1];
+    if (!token) return res.status(401).json({ message: "Tokennya nda ada" });
+    try {
+        jwt.verify(token, JWT_SECRET, (err, user) => {
+            if (err) return res.sendStatus(403);
+            req.user = user;
+            next();
+        });
+    } catch (e) {
+        res.status(403).json({message: "Tokennya nda valid" });
+    }
 };
+
+app.get("/me", autheticateToken, async (req, res) => {
+    const user = await findUserById(req.user.id);
+    if (!user) return res.status(404).json({message: "User tidak ditemukan" });
+    res.json({
+        id: user.user_id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar
+    })
+})
 
 app.get("/users/:id", async (req, res) => {
     const id = req.params.id;

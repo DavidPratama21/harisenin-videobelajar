@@ -39,19 +39,17 @@ export const useStore = create((set, get) => ({
                 email,
                 password,
             });
-            console.log(res);
+            // console.log(res);
             if (!res.data.user) {
-                toast.error(
-                    res.data.message
-                        ? `Login gagal: ${res.data.message}`
-                        : "Login gagal"
-                );
-
+                toast.error(res.data.message || "Login gagal");
                 return;
             }
             const user = res.data.user;
+            const token = res.data.token;
+
             localStorage.setItem("Login", true);
             localStorage.setItem("user", JSON.stringify(user));
+            localStorage.setItem("token", token);
 
             toast.success("Login Success");
             resetForm();
