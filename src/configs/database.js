@@ -1,5 +1,7 @@
 import mysql from "mysql2";
 import dotenv from "dotenv";
+import nodemailer from "nodemailer";
+import { Search } from "lucide-react";
 dotenv.config();
 
 export const pool = mysql
@@ -12,15 +14,73 @@ export const pool = mysql
         waitForConnections: true,
         connectionLimit: 10,
         queueLimit: 0,
-        allowPublicKeyRetrieval: true
+        allowPublicKeyRetrieval: true,
     })
     .promise();
 
 // ===== PRODUCTS =====
 
-export async function getProducts() {
-    const [rows] = await pool.query("SELECT * FROM products");
-    return rows;
+// export async function getProducts() {
+//     const [rows] = await pool.query("SELECT * FROM products");
+//     return rows;
+// }
+
+const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASSWORD,
+    },
+});
+
+export const sendMail = async (to, subject, text) => {
+    const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to,
+        subject,
+        text,
+    };
+
+    try {
+        const info = await transporter.sendMail(mailOptions);
+        console.log("Email dikirim: " + info.response);
+        return info;
+    } catch (e) {
+        console.error("Error nih kirim email: ", e);
+        throw new Error("Gagal kirim email");
+    }
+};
+
+export async function getProducts({ search, sort, minPrice, maxPrice }) {
+    let query = "SELECT * FROM products WHERE 1=1";
+    let values = [];
+
+    if (search) {
+        query += " AND (name LIKE ? OR description LIKE ?)";
+        values.push(`%${search}%`, `%${search}%`);
+    }
+
+    if (minPrice) {
+        query += " AND price >= ?";
+        values.push(minPrice);
+    }
+
+    if (maxPrice) {
+        query += " AND price <= ?";
+        values.push(maxPrice);
+    }
+
+    if (sort === "asc") {
+        query += " ORDER BY price ASC";
+    } else if (sort === "desc") {
+        query += " ORDER BY price DESC";
+    }
+    try {
+        const [rows] = await pool.query(query, values);
+        return rows;
+    } catch (e) {
+        throw new Error("Query Failed: " + e.message);
+    }
 }
 
 export async function getProduct(id) {
@@ -79,7 +139,9 @@ export async function findUserByEmail(email) {
 }
 
 export async function findUserById(id) {
-    const [rows] = await pool.query(`SELECT * FROM users WHERE user_id = ?`, [id]);
+    const [rows] = await pool.query(`SELECT * FROM users WHERE user_id = ?`, [
+        id,
+    ]);
     return rows[0] || null;
 }
 

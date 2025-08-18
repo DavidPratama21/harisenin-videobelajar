@@ -2,6 +2,7 @@ import express from "express";
 import bcrypt from "bcrypt";
 import cors from "cors";
 import jwt from "jsonwebtoken";
+import { sendMail } from "./src/configs/database.js";
 import {
     pool,
     getProducts,
@@ -73,10 +74,14 @@ app.post("/login", async (req, res) => {
         return res.status(401).json({ message: "Invalid Password" });
     }
 
-    const token = jwt.sign({ id: user.user_id, email: user.email }, JWT_SECRET, {
-        expiresIn: "1h",
-    });
-    console.log(token)
+    const token = jwt.sign(
+        { id: user.user_id, email: user.email },
+        JWT_SECRET,
+        {
+            expiresIn: "1h",
+        }
+    );
+    console.log(token);
     res.json({
         message: "Login Success",
         token,
@@ -99,20 +104,20 @@ const autheticateToken = (req, res, next) => {
             next();
         });
     } catch (e) {
-        res.status(403).json({message: "Tokennya nda valid" });
+        res.status(403).json({ message: "Tokennya nda valid" });
     }
 };
 
 app.get("/me", autheticateToken, async (req, res) => {
     const user = await findUserById(req.user.id);
-    if (!user) return res.status(404).json({message: "User tidak ditemukan" });
+    if (!user) return res.status(404).json({ message: "User tidak ditemukan" });
     res.json({
         id: user.user_id,
         name: user.name,
         email: user.email,
-        avatar: user.avatar
-    })
-})
+        avatar: user.avatar,
+    });
+});
 
 app.get("/users/:id", async (req, res) => {
     const id = req.params.id;
@@ -159,11 +164,35 @@ app.put("/users/:id", async (req, res) => {
     }
 });
 
+app.post("/send-email", async (req, res) => {
+    const { to, subject, text } = req.body;
+
+    if (!to || !subject || !text) {
+        return res.status(400).send({ message: "Diisi dulu mas emailnya" });
+    }
+
+    try {
+        await sendMail(to, subject, text);
+        res.status(200).json({ message: "Email berhasil dikirim" });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // ===== PRODUCTS =====
 
+// app.get("/products", autheticateToken, async (req, res) => {
+//     const products = await getProducts();
+//     res.send(products);
+// });
+
 app.get("/products", autheticateToken, async (req, res) => {
-    const products = await getProducts();
-    res.send(products);
+    try {
+        const products = await getProducts(req.query);
+        res.json(products);
+    } catch (e) {
+        res.status(500).json({ error: "Gagal ambil data" + e.message });
+    }
 });
 
 app.get("/products/:id", async (req, res) => {
