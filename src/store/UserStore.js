@@ -1,10 +1,8 @@
-import { useNavigate } from "react-router";
 import { create } from "zustand";
 import { toast } from "react-toastify";
 import axios from "axios";
 
 const api_url = import.meta.env.VITE_API_URL;
-// const navigate = useNavigate();
 
 export const useStore = create((set, get) => ({
     // Form states
@@ -14,6 +12,7 @@ export const useStore = create((set, get) => ({
     phone: "",
     gender: "male",
     confirmPassword: "",
+    avatar: null,
 
     setField: (field, value) =>
         set((state) => ({
@@ -136,6 +135,47 @@ export const useStore = create((set, get) => ({
             } else {
                 toast.error("Gagal mengupdate profil.");
             }
+        }
+    },
+
+    setAvatarPreview: (file) => {
+        if (file){
+            const previewUrl = URL.createObjectURL(file)
+            set({avatar: previewUrl})
+        }
+    },
+
+    uploadAvatar: async(userId, file) => {
+        if (!file) {
+            toast.warning("Pilih dulu gambarnya")
+            return
+        }
+
+        try{
+            const formData = new FormData()
+            formData.append("image", file)
+
+            const token = localStorage.getItem("token")
+            const user = JSON.parse(localStorage.getItem("user"))
+            const method = user.avatar ? "put" : "post";
+            const res = await axios[method](`${api_url}/users/${userId}/avatar`, formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            )
+            const avatarUrl = `${api_url}${res.data.path}`
+
+            // Update URL avatar di LS
+            const updatedUser = {...user, avatar: avatarUrl}
+            localStorage.setItem("user", JSON.stringify(updatedUser))
+
+            toast.success("Foto profil berhasil di update")
+            set({avatar: avatarUrl})
+        }catch (e) {
+            toast.error("Gagal di upload foto profilnya")
         }
     },
 }));

@@ -1,7 +1,6 @@
 import mysql from "mysql2";
 import dotenv from "dotenv";
 import nodemailer from "nodemailer";
-import { Search } from "lucide-react";
 dotenv.config();
 
 export const pool = mysql
@@ -14,7 +13,6 @@ export const pool = mysql
         waitForConnections: true,
         connectionLimit: 10,
         queueLimit: 0,
-        allowPublicKeyRetrieval: true,
     })
     .promise();
 
@@ -51,7 +49,7 @@ export const sendMail = async (to, subject, text) => {
     }
 };
 
-export async function getProducts({ search, sort, minPrice, maxPrice }) {
+export async function getProducts({ search, sort, minPrice, maxPrice, bidangStudi }) {
     let query = "SELECT * FROM products WHERE 1=1";
     let values = [];
 
@@ -60,20 +58,35 @@ export async function getProducts({ search, sort, minPrice, maxPrice }) {
         values.push(`%${search}%`, `%${search}%`);
     }
 
+    if (bidangStudi) {
+        query += " AND bidang_studi = ?";
+        values.push(bidangStudi);
+    }
+
     if (minPrice) {
         query += " AND price >= ?";
-        values.push(minPrice);
+        values.push(Number(minPrice));
     }
 
     if (maxPrice) {
         query += " AND price <= ?";
-        values.push(maxPrice);
+        values.push(Number(maxPrice));
     }
 
-    if (sort === "asc") {
-        query += " ORDER BY price ASC";
-    } else if (sort === "desc") {
-        query += " ORDER BY price DESC";
+    // Sorting
+    switch (sort) {
+        case "name_asc":
+            query += " ORDER BY name ASC";
+            break;
+        case "name_desc":
+            query += " ORDER BY name DESC";
+            break;
+        case "price_asc":
+            query += " ORDER BY price ASC";
+            break;
+        case "price_desc":
+            query += " ORDER BY price DESC";
+            break;
     }
     try {
         const [rows] = await pool.query(query, values);

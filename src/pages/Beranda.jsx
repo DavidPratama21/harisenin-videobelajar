@@ -1,3 +1,6 @@
+import { useState } from "react";
+import axios from "axios";
+import { toast } from "react-toastify";
 import Card from "../components/molecules/Card";
 import card_1 from "../assets/Card_images/card_1.jpg";
 import card_2 from "../assets/Card_images/card_2.jpg";
@@ -20,8 +23,6 @@ import Beranda_layout from "../layouts/Beranda_layout";
 import Tabs from "../components/molecules/Tabs";
 import Hero from "../components/molecules/Hero";
 import Title_desc from "../components/molecules/Title_desc";
-// import { Videos } from "../data/Videos";
-// import { Tutors } from "../data/Tutors";
 
 const TabsList = [
     "Semua Kelas",
@@ -32,6 +33,25 @@ const TabsList = [
 ];
 
 const Beranda = () => {
+    const [email, setEmail] = useState("");
+
+    const handleSubscribe = async () => {
+        if (!email) {
+            toast.error("Email mu apa atuh?");
+            return;
+        }
+        try {
+            const res = await axios.post(
+                `${import.meta.env.VITE_API_URL}/subscribe`,
+                { to: email }
+            );
+            toast.success(res.data.message);
+            setEmail("");
+        } catch (e) {
+            toast.error("Gagal nih :" + (e.response?.data?.error || e.message));
+        }
+    };
+
     return (
         <>
             <Beranda_layout>
@@ -49,15 +69,60 @@ const Beranda = () => {
 
                         {/* 3837, 3841, 3842, Cards */}
                         <div className="flex flex-col mx-auto gap-5 sm:gap-x-6 sm:gap-y-8 sm:flex-row sm:flex-wrap">
-                            <Card image={card_1} tutor={tutor_1} rating={3} reviewers={86}/>
-                            <Card image={card_2} tutor={tutor_2} rating={4} reviewers={66}/>
-                            <Card image={card_3} tutor={tutor_3} rating={3} reviewers={24}/>
-                            <Card image={card_4} tutor={tutor_4} rating={5} reviewers={43}/>
-                            <Card image={card_5} tutor={tutor_5} rating={4} reviewers={47}/>
-                            <Card image={card_6} tutor={tutor_6} rating={4} reviewers={43}/>
-                            <Card image={card_7} tutor={tutor_7} rating={3} reviewers={23}/>
-                            <Card image={card_8} tutor={tutor_8} rating={3} reviewers={57}/>
-                            <Card image={card_9} tutor={tutor_3} rating={3} reviewers={75}/>
+                            <Card
+                                image={card_1}
+                                tutor={tutor_1}
+                                rating={3}
+                                reviewers={86}
+                            />
+                            <Card
+                                image={card_2}
+                                tutor={tutor_2}
+                                rating={4}
+                                reviewers={66}
+                            />
+                            <Card
+                                image={card_3}
+                                tutor={tutor_3}
+                                rating={3}
+                                reviewers={24}
+                            />
+                            <Card
+                                image={card_4}
+                                tutor={tutor_4}
+                                rating={5}
+                                reviewers={43}
+                            />
+                            <Card
+                                image={card_5}
+                                tutor={tutor_5}
+                                rating={4}
+                                reviewers={47}
+                            />
+                            <Card
+                                image={card_6}
+                                tutor={tutor_6}
+                                rating={4}
+                                reviewers={43}
+                            />
+                            <Card
+                                image={card_7}
+                                tutor={tutor_7}
+                                rating={3}
+                                reviewers={23}
+                            />
+                            <Card
+                                image={card_8}
+                                tutor={tutor_8}
+                                rating={3}
+                                reviewers={57}
+                            />
+                            <Card
+                                image={card_9}
+                                tutor={tutor_3}
+                                rating={3}
+                                reviewers={75}
+                            />
                         </div>
                     </main>
 
@@ -89,9 +154,13 @@ const Beranda = () => {
                                 <input
                                     type="text"
                                     placeholder="Masukkan Emailmu"
+                                    onChange={(e) => setEmail(e.target.value)}
                                     className="rounded-[10px] text-center py-2.5 pl-3 pr-2 bg-other-primary text-sm font-normal leading-[140%] tracking-[0.2px] placeholder-dark-secondary text-dark-secondary sm:p-0 sm:text-base sm:text-left sm:outline-none"
                                 />
-                                <button className="rounded-[10px] py-2.5 bg-secondary text-sm font-bold leading-[140%] tracking-[0.2px] text-light-primary sm:px-6.5 sm:text-base">
+                                <button
+                                    onClick={handleSubscribe}
+                                    className="rounded-[10px] py-2.5 bg-secondary text-sm font-bold leading-[140%] tracking-[0.2px] text-light-primary sm:px-6.5 sm:text-base"
+                                >
                                     Subscribe
                                 </button>
                             </div>

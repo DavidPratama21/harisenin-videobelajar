@@ -11,11 +11,23 @@ export const useStore = create((set, get) => ({
         description: "",
         price: "",
     },
+    filters: {
+        search: "",
+        bidangStudi: "",
+        minPrice: "",
+        maxPrice: "",
+        sort: "",
+    },
     productEdit: null,
 
     fetchProducts: async () => {
         try {
-            const response = await axios.get(`${api_url}/Products`);
+            const token = localStorage.getItem("token");
+            const { filters } = get();
+            const response = await axios.get(`${api_url}/products`, {
+                params: filters,
+                headers: { Authorization: `Bearer ${token}` },
+            });
             set({ products: response.data });
         } catch (e) {
             console.error("Error nya tu ini :", e.message);
@@ -31,7 +43,7 @@ export const useStore = create((set, get) => ({
                 products: [...state.products, res.data.data],
                 formData: { name: "", description: "", price: "" },
             }));
-            toast.success("Produk berhasil di tambahin")
+            toast.success("Produk berhasil di tambahin");
         } catch (e) {
             console.error("Error nya tu ini :", e.message);
         }
@@ -106,4 +118,9 @@ export const useStore = create((set, get) => ({
             console.error("Errornya karena :", e.message);
         }
     },
+
+    setFilter: (name, value) =>
+        set((state) => ({
+            filters: { ...state.filters, [name]: value },
+        })),
 }));

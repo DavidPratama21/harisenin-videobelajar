@@ -18,7 +18,9 @@ const Profil = () => {
         phone,
         gender,
         password,
-        confirmPassword,
+        avatar,
+        setAvatarPreview,
+        uploadAvatar,
         setField,
         updateProfile,
     } = useStore();
@@ -40,6 +42,7 @@ const Profil = () => {
                 setField("gender", user.gender);
                 setField("password", "");
                 setField("confirmPassword", "");
+                if (user.avatar) setField("avatar", `${import.meta.env.VITE_API_URL}/uploads/${user.avatar}`)
             } catch (err) {
                 toast.error("Gagal mengambil data user");
             }
@@ -51,6 +54,16 @@ const Profil = () => {
     }, [setField]);
 
     const user = JSON.parse(localStorage.getItem("user"));
+
+    const handleAvatarChange = (e) => {
+        const file = e.target.files[0];
+        if (file){
+            setAvatarPreview(file)
+            uploadAvatar(user.id, file)
+        }
+
+    
+    };
 
     return (
         <Profil_layout>
@@ -76,7 +89,7 @@ const Profil = () => {
                     <div className="flex gap-3.5 items-center sm:gap-4">
                         {/* Avatar */}
                         <img
-                            src={Avatar}
+                            src={avatar || Avatar}
                             alt="Avatar image"
                             className="w-15 rounded sm:w-23"
                         />
@@ -87,7 +100,21 @@ const Profil = () => {
                             <p className="leading-[140%] tracking-[0.2px] text-dark-primary sm:text-lg">
                                 {displayEmail}
                             </p>
-                            <button className="font-bold leading-[140%] tracking-[0.2px] text-tertiary w-fit">
+                            <input
+                                type="file"
+                                id="avatarUpload"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={handleAvatarChange}
+                            />
+                            <button
+                                className="font-bold leading-[140%] tracking-[0.2px] text-tertiary w-fit"
+                                onClick={() =>
+                                    document
+                                        .getElementById("avatarUpload")
+                                        .click()
+                                }
+                            >
                                 Ganti Foto Profil
                             </button>
                         </div>

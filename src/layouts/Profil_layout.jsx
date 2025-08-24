@@ -7,8 +7,10 @@ import Footer from "../components/organisems/Footer";
 import Drop_down_menu from "../components/molecules/Drop_down_menu";
 import Logo from "../components/atoms/Logo";
 import Profile from "../assets/Profile.png";
+import { useStore } from "../store/UserStore";
 
 const Profil_layout = ({ children }) => {
+    const {avatar} = useStore()
     const isMobile = useMediaQuery({ maxWidth: 640 });
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const dropDownRef = useRef(null);
@@ -47,7 +49,7 @@ const Profil_layout = ({ children }) => {
                 ) : (
                     <button onClick={() => setIsProfileOpen(!isProfileOpen)}>
                         <img
-                            src={Profile}
+                            src={avatar || Profile}
                             alt="Profile picture"
                             className="w-11 rounded-[10px]"
                         />
